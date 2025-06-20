@@ -1,80 +1,126 @@
-# Optimized Host Checker by EchoEyes - Upgraded with asyncio/aiohttp
+# EchoEyes Host Checker
+# With Added Server List 
+# 10x faster than before
+
+# Telegram account @echoeyess
+# github: https://github.com/echoeyess
 
 import asyncio
 import aiohttp
 import os
 import sys
 
-# Terminal colors
 orange, yellow, green, red, blue, cyan, white = '\033[38;5;208m', '\033[33m', '\033[32m', '\033[31m', '\033[34m', '\033[36m', '\033[37m'
 
-async def fetch(session, url, expected_servers):
-    try:
-        async with session.get(f"https://{url}", timeout=10) as response:
-            server = response.headers.get("Server", "").lower()
-            status = response.status
-            match = any(s.lower() in server for s in expected_servers)
+SEM = asyncio.Semaphore(100)
 
-            if status == 200 and match:
-                print(f"{cyan}~ {green}[working] [{url}]{white}")
-            else:
-                print(f"{cyan}~ {orange}[N/W] [{url}]{white}")
-    except Exception as e:
-        print(f"{cyan}~ {red}[N/A] [{url}]{white}")
+async def fetch(session, url, expected_servers):
+    async with SEM:
+        try:
+            async with session.get(f"https://{url}", timeout=10, ssl=False) as response:
+                status = response.status
+                server = response.headers.get("Server", "").lower().split("/")[0].strip()
+
+                if status == 200:
+                    if any(s.lower() in server for s in expected_servers):
+                        print(f"{cyan}~ {green}[working] 200 OK [{url}] → {server}{white}")
+                    else:
+                        print(f"{cyan}~ {yellow}[WRONG SERVER] 200 OK [{url}] → {server or 'unknown'}{white}")
+                else:
+                    print(f"{cyan}~ {orange}[NOT 200] [{url}] → status: {status}, server: {server or 'unknown'}{white}")
+
+        except asyncio.TimeoutError:
+            print(f"{cyan}~ {red}[Timeout] [{url}]{white}")
+        except aiohttp.ClientConnectorError:
+            print(f"{cyan}~ {red}[Connection Error] [{url}]{white}")
+        except Exception as e:
+            print(f"{cyan}~ {red}[Error: {str(e)}] [{url}]{white}")
 
 async def run_checker(hosts, expected_servers):
-    connector = aiohttp.TCPConnector(limit=100)
     timeout = aiohttp.ClientTimeout(total=15)
+    connector = aiohttp.TCPConnector(limit=100, ssl=False)
 
-    async with aiohttp.ClientSession(connector=connector, timeout=timeout, headers={
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+    async with aiohttp.ClientSession(timeout=timeout, connector=connector, headers={
+        "User-Agent": "Mozilla/5.0 (EchoEyes Host Checker)"
     }) as session:
         tasks = [fetch(session, host, expected_servers) for host in hosts]
-        await asyncio.gather(*tasks, return_exceptions=True)
+        await asyncio.gather(*tasks)
 
 def main():
     try:
-        os.system("clear")
+        os.system("clear" if os.name != "nt" else "cls")
 
-        intro = f"""{red} 
+        print(f"""{cyan}
 
-            ⚠️ THIS TOOL IS FOR HUNTING PURPOSES ONLY                   
-            ⚠️ MAKE SURE TO USE A SIM CARD WITH NO DATA      
-            
-            {yellow}Telegram account{white} -> {blue}@echoeyes{white}  
-            {yellow}github{white} -> {blue}https://github.com/echoeyesdev{white}                                    
-            
-            {green}<----- let the Hunt begin ----->{white}
-            coded with love by -->{blue}Echoeyes{white} <--
- 
-{blue}
-choose index of the Server
+▄███▄   ▄█▄     ▄  █ ████▄ ▄███▄ ▀▄    ▄ ▄███▄     ▄▄▄▄▄   
+█▀   ▀  █▀ ▀▄  █   █ █   █ █▀   ▀  █  █  █▀   ▀   █     ▀▄ 
+██▄▄    █   ▀  ██▀▀█ █   █ ██▄▄     ▀█   ██▄▄   ▄  ▀▀▀▀▄   
+█▄   ▄▀ █▄  ▄▀ █   █ ▀████ █▄   ▄▀  █    █▄   ▄▀ ▀▄▄▄▄▀    
+▀███▀   ▀███▀     █        ▀███▀  ▄▀     ▀███▀             
+                 ▀                                         
+                                                           
 
-[1] cloudflare 
-[2] cloudfront 
+                                            
+{white}""")
+
+        print(f"""{cyan}
+┌────────────────────────────────────────────────────────────┐
+│{yellow}                EchoEyes Host Checker                {cyan}│
+├────────────────────────────────────────────────────────────┤
+│ {white}GitHub:    {blue}https://github.com/echoeyess{cyan}                   │
+│ {white}Telegram:  {blue}@echoeyess{cyan}                                    │
+│ {white}Created by:{blue} EchoEyes{cyan}                                      │
+└────────────────────────────────────────────────────────────┘
+{white}""")
+
+        print(f"""{blue}Choose a server type to match:
+
+[1] Cloudflare
+[2] Cloudfront
 [3] Apache
 [4] HAProxy
-[5] nginx all versions 
+[5] Nginx
+[6] Microsoft Azure/IIS
+[7] LiteSpeed
+[8] Google Frontend
+[9] Amazon EC2/AWS
+[10] DigitalOcean
+[11] Fastly CDN
+[12] Akamai CDN
+[13] Tencent Cloud
+[14] Baidu CDN
+[15] Custom Server Name
 {white}
-""" 
-        print(intro)
+""")
 
-        # Read hosts
         try:
-            with open("hosts.txt", "r") as f:
-                hosts = [h.strip() for h in f if h.strip()]
+            with open("hosts.txt", "r") as file:
+                hosts = [line.strip() for line in file if line.strip()]
         except FileNotFoundError:
             print(f"{red}Error: 'hosts.txt' not found.{white}")
             sys.exit(1)
 
-        # User input
-        index = input("Choose the index of the server: ").strip()
+        if not hosts:
+            print(f"{red}No hosts found in 'hosts.txt'.{white}")
+            return
+
+        index = input(f"{yellow}Enter the index of the server: {white}").strip()
         mapping = {
             "1": ["cloudflare"],
             "2": ["cloudfront", "amazons3"],
             "3": ["apache"],
             "4": ["haproxy"],
-            "5": ["nginx"]
+            "5": ["nginx"],
+            "6": ["microsoft-iis", "azure", "microsoft"],
+            "7": ["litespeed"],
+            "8": ["gws", "google", "google frontend"],
+            "9": ["amazon", "awselb", "ec2"],
+            "10": ["digitalocean"],
+            "11": ["fastly"],
+            "12": ["akamai", "akamaighost"],
+            "13": ["tencent"],
+            "14": ["baidu"],
+            "15": ["custom"]
         }
 
         expected_servers = mapping.get(index)
@@ -82,7 +128,14 @@ choose index of the Server
             print(f"{red}Invalid choice.{white}")
             return
 
-        print(f"{blue}You selected {green}{expected_servers[0].capitalize()}{blue}. Good luck!\n")
+        if expected_servers == ["custom"]:
+            custom = input(f"{yellow}Enter custom server name to match: {white}").strip().lower()
+            if not custom:
+                print(f"{red}Custom server name cannot be empty.{white}")
+                return
+            expected_servers = [custom]
+
+        print(f"\n{blue}✔ You selected: {green}{', '.join(expected_servers)}{white}\n")
         asyncio.run(run_checker(hosts, expected_servers))
 
     except KeyboardInterrupt:
