@@ -40,7 +40,7 @@ Extract clean domain names from junk text, websites, or PDF files.
 ## **Requirements**
 
 Install required Python libraries with: 
-pip install -r requirements
+`pip install -r requirements`
 
 ---
 
