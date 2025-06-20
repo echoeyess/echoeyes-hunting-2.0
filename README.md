@@ -1,17 +1,18 @@
-# EchoEyes Tool Usage Guide
+
+# **EchoEyes Tool Usage Guide**
 
 Welcome to the **EchoEyes Multi-Tool Project** — a powerful toolkit for **freenet explorers, tunnel testers, and freedom hackers**.
 
 ---
 
-## 1. EchoEyes Host Checker (Accurate Mode)
+## **1. EchoEyes Host Checker (Accurate Mode)**
 
 **Purpose:**  
 Check a list of hosts and verify if they are working and match a specific server type (Cloudflare, Cloudfront, Nginx, etc).
 
 **How to Use:**  
-1. Create a file named `hosts.txt` in the same folder containing one hostname per line. 
-2. Run echoeyes_2.0.py script  
+1. Create a file named `hosts.txt` in the same folder containing one hostname per line.  
+2. Run `echoeyes_2.0.py` script  
 3. Choose the server type you want to match from the menu.  
 4. The tool will test each host and print results:  
    - `[working]` if status 200 and server matches your choice  
@@ -20,7 +21,7 @@ Check a list of hosts and verify if they are working and match a specific server
 
 ---
 
-## 2. EchoEyes URL Extractor
+## **2. EchoEyes URL Extractor**
 
 **Purpose:**  
 Extract clean domain names from junk text, websites, or PDF files.
@@ -36,21 +37,21 @@ Extract clean domain names from junk text, websites, or PDF files.
 
 ---
 
-## Requirements
+## **Requirements**
 
-Install required Python libraries with:
-pip install -r requirements.txt
+Install required Python libraries with: 
+pip install -r requirements
 
 ---
 
-## Tips
+## **Tips**
 
 - Clean your input files for better extraction results.  
 - Use the output `hosts.txt` from the Extractor as input for the Host Checker.
 
 ---
 
-## Creator
+## **Creator**
 
 Made with ♥ by EchoEyes  
 Telegram: @echoeyess  
