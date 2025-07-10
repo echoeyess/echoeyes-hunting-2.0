@@ -2,7 +2,7 @@
 # With Added Server List 
 # 10x faster than before
 
-# Telegram account @echoeyess
+# Telegram account @EchoEyesOfficial
 # github: https://github.com/echoeyess
 
 import asyncio
@@ -68,7 +68,7 @@ def main():
 │{yellow}                EchoEyes Host Checker                {cyan}│
 ├────────────────────────────────────────────────────────────┤
 │ {white}GitHub:    {blue}https://github.com/echoeyess{cyan}                   │
-│ {white}Telegram:  {blue}@echoeyess{cyan}                                    │
+│ {white}Telegram:  {blue}@EchoEyesOfficial{cyan}                                    │
 │ {white}Created by:{blue} EchoEyes{cyan}                                      │
 └────────────────────────────────────────────────────────────┘
 {white}""")
