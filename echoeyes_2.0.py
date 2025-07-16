@@ -1,15 +1,22 @@
-# 10x faster with clean output 
+# EchoEyes The Goat !!
 
-# Telegram: @EchoEyesOfficial | GitHub: https://github.com/echoeyess
+# 10x faster 
+# New Domain Fetcher Feature
+# Clean Output Bruu 
+
+# Telegram: @EchoEyesOffcial
+# GitHub: https://github.com/echoeyess
 
 import asyncio
 import aiohttp
 import os
 import sys
 import dns.resolver
+import requests
+import threading
+import time
 from tqdm import tqdm
 
-# Termux Colors
 orange, yellow, green, red, blue, cyan, white = '\033[38;5;208m', '\033[33m', '\033[32m', '\033[31m', '\033[34m', '\033[36m', '\033[37m'
 
 SEM = asyncio.Semaphore(100)
@@ -22,6 +29,60 @@ CDN_SIGNATURES = [
 progress_bar = None
 working_hosts = []
 print_lock = asyncio.Lock()
+
+def spinner(stop_event):
+    symbols = ['|', '/', '-', '\\']
+    i = 0
+    while not stop_event.is_set():
+        sys.stdout.write(f"\rFetching domains... {symbols[i % len(symbols)]}")
+        sys.stdout.flush()
+        i += 1
+        time.sleep(0.1)
+    sys.stdout.write("\rFetching domains... Done!\n")
+
+def fetch_domains(tld, max_retries=3):
+    clean_tld = tld.lstrip(".").lower()
+    url = f"https://crt.sh/?q=%.{clean_tld}&output=json"
+    stop_event = threading.Event()
+    thread = threading.Thread(target=spinner, args=(stop_event,))
+    thread.start()
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = requests.get(url, timeout=30)
+            if response.status_code != 200:
+                raise Exception(f"Unexpected response code: {response.status_code}")
+            data = response.json()
+            domains = set()
+
+            for entry in data:
+                name_value = entry.get("name_value", "")
+                for name in name_value.splitlines():
+                    clean_name = name.lower().lstrip("*.").strip()
+                    if clean_name.endswith(f".{clean_tld}"):
+                        domains.add(clean_name)
+
+            stop_event.set()
+            thread.join()
+
+            if not domains:
+                print("[-] No domains found.")
+                return False
+
+            with open("all_domains.txt", "w") as file:
+                file.write("\n".join(sorted(domains)))
+
+            print(f"[✓] Saved {len(domains)} domains to: all_domains.txt")
+            return True
+
+        except Exception as e:
+            if attempt == max_retries:
+                stop_event.set()
+                thread.join()
+                print(f"[-] Error after {max_retries} attempts: {e}")
+                return False
+            else:
+                print(f"[!] Attempt {attempt} failed. Retrying...")
 
 def detect_cdn(host, server_header):
     try:
@@ -72,7 +133,26 @@ async def run_checker(hosts, expected_servers):
         await asyncio.gather(*tasks)
     progress_bar.close()
 
-def main():
+def show_domain_adder_page():
+    os.system("clear" if os.name != "nt" else "cls")
+    print(f"""{cyan}
+┌────────────────────────────────────────────────────────────┐
+│{yellow}             EchoEyes Domain Fetcher            {cyan}│
+└────────────────────────────────────────────────────────────┘
+{white}""")
+    tld = input(f"{yellow}~ Enter the domain suffix (e.g. gov.za): {white}").strip().lower()
+    if tld:
+        success = fetch_domains(tld)
+        if success:
+            print(f"{green}[✓] Successfully added hosts ending with .{tld}{white}")
+        else:
+            print(f"{red}[-] Failed to fetch or save domains for .{tld}{white}")
+    else:
+        print(f"{red}[-] Invalid TLD input.{white}")
+    input(f"\n{blue}Press Enter to continue to scan page...{white}")
+    os.system("clear" if os.name != "nt" else "cls")
+
+def scan_main():
     try:
         os.system("clear" if os.name != "nt" else "cls")
 
@@ -90,8 +170,8 @@ def main():
 │{yellow}                EchoEyes Host Checker                {cyan}│
 ├────────────────────────────────────────────────────────────┤
 │ {white}GitHub:    {blue}https://github.com/echoeyess{cyan}                   │
-│ {white}Telegram:  {blue}@echoeyess{cyan}                                    │
-│ {white}Created by:{blue} EchoEyes{cyan}                                      │
+│ {white}Telegram:  {blue}@EchoEyesOffcial{cyan}                                    │
+│ {white}Coded by:{blue} EchoEyes{cyan}                                      │
 └────────────────────────────────────────────────────────────┘
 {white}""")
 
@@ -160,7 +240,6 @@ def main():
         print(f"\n{blue}✔ You selected: {green}{', '.join(expected_servers)}{white}\n")
         asyncio.run(run_checker(hosts, expected_servers))
 
-        # Save working hosts
         with open("working_hosts.txt", "w") as f:
             for host in working_hosts:
                 f.write(host + "\n")
@@ -173,6 +252,25 @@ def main():
     except Exception as e:
         print(f"{red}Unexpected error: {e}{white}")
         sys.exit(1)
+
+def main():
+    os.system("clear" if os.name != "nt" else "cls")
+    print(f"""{cyan}
+┌────────────────────────────────────────────────────────────┐
+│{yellow}                EchoEyes Domain Fetcher               {cyan}│
+└────────────────────────────────────────────────────────────┘
+{white}""")
+    print(f"{blue}[1] Add new domains | {red}Data Required{blue}")
+    print(f"{blue}[2] Proceed to scan")
+    choice = input(f"\n{yellow}Enter your choice: {white}").strip()
+
+    if choice == "1":
+        show_domain_adder_page()
+        scan_main()
+    elif choice == "2":
+        scan_main()
+    else:
+        print(f"{red}Invalid choice.{white}")
 
 if __name__ == "__main__":
     main()
