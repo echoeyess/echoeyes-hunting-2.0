@@ -54,5 +54,5 @@ Install required Python libraries with:
 ## **Creator**
 
 Made with ♥ by EchoEyes  
-Telegram: @echoeyess  
+Telegram: @OfficialEchoEyess
 GitHub: https://github.com/echoeyess
