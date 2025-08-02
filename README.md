@@ -1,4 +1,4 @@
-9
+99
 # **EchoEyes Tool Usage Guide**
 
 Welcome to the **EchoEyes Multi-Tool Project** — a powerful toolkit for **freenet explorers, tunnel testers, and freedom hackers**.
@@ -54,6 +54,6 @@ Install required Python libraries with:
 ## **Creator**
 
 Made with ♥ by EchoEyes  
-Telegram: @OfficialEchoEyess
+Telegram: @EchoEyesOfficial
 
 GitHub: https://github.com/echoeyess
