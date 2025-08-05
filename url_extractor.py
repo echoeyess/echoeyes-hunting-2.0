@@ -26,7 +26,7 @@ blue = '\033[34m'
 cyan = '\033[36m'
 white = '\033[0m'
 
-# Extract visible text from a website
+
 def extract_visible_text_from_website(url):
     try:
         if not url.startswith("http"):
@@ -54,7 +54,6 @@ def extract_text_from_pdf(file_path):
         print(f"{red}Error reading PDF: {e}{white}")
     return text
 
-# Extract clean domains from text
 def extract_clean_websites_from_text(text):
     pattern = re.compile(r'\b(?:https?://)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?(?:/[^\s]*)?\b')
     matches = re.findall(pattern, text)
@@ -76,7 +75,7 @@ def save_to_hosts(data, filename="hosts.txt"):
             f.write(site.strip() + "\n")
     print(f"\n{green}✅ Saved {len(data)} website(s) to:{white} {blue}{full_path}{white}")
 
-# Main logic
+
 def main():
     os.system("clear" if os.name != "nt" else "cls")
     print(f"""
