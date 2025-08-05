@@ -1,6 +1,6 @@
 # EchoEyes Url extractor
 
-# Telegram account @echoeyess
+# Telegram account @EchoEyesOfficial
 # github: https://github.com/echoeyess
 
 
